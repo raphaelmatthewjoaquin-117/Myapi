@@ -1,0 +1,18 @@
+{
+  "name": "MyApi Docker Lab",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "installDockerCompose": true
+    }
+  },
+  "forwardPorts": [80],
+  "portsAttributes": {
+    "80": {
+      "label": "MyApi via nginx",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "dotnet restore MyApi/MyApi.csproj"
+}
