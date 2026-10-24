@@ -1,10 +1,12 @@
 using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-await Database.InitializeAsync(connectionString);
+if (connectionString is not null)
+{
+    await Database.InitializeAsync(connectionString);
+}
 
 var app = builder.Build();
 
@@ -25,8 +27,15 @@ app.MapGet("/api/health", () => Results.Ok(new
     instance = Environment.MachineName
 }));
 
-app.MapGet("/api/items", async () =>
+app.MapGet("/api/items", async Task<IResult> () =>
 {
+    if (connectionString is null)
+    {
+        return Results.Problem(
+            detail: "The DefaultConnection connection string is not configured.",
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+
     var items = new List<Item>();
     await using var connection = new SqlConnection(connectionString);
     await connection.OpenAsync();
